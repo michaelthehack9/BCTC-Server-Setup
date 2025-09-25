@@ -1,5 +1,5 @@
 # BCTC-MySQL-Setup
-* Download the RUNME.bat file
+* Download the mysql.bat file
 * Right-Click it and click properties
 * Then click unblock
 * Then click apply
