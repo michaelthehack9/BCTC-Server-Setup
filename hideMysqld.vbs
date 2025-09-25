@@ -1,0 +1,1 @@
+CreateObject("WScript.Shell").Run "mysqld.exe", 0, False
