@@ -37,9 +37,12 @@ exit /B 0
 :startAll
 %MYSQL_BIN%\hideMysqld.vbs
 %APACHE_BIN%\hideApache.vbs
+echo Services Started
 exit /B 0
 
 :stopAll
 %MYSQL_BIN%\mysqladmin -u server -pserver shutdown
 taskkill /F /im apache.exe
+echo Services Stopped
 exit /B 0
+
