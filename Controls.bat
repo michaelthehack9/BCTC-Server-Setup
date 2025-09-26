@@ -42,7 +42,8 @@ exit /B 0
 
 :stopAll
 %MYSQL_BIN%\mysqladmin -u server -pserver shutdown
-taskkill /F /im apache.exe
+taskkill /F /im httpd.exe
 echo Services Stopped
 exit /B 0
+
 
