@@ -39,7 +39,7 @@ set "APACHE_ZIP=%DOWNLOADS%\httpd-%APACHE_VERSION%-win64-VS17.zip"
 
 echo Downloading Apache %APACHE_VERSION%...
 powershell -Command "Start-BitsTransfer -Source '%APACHE_URL%' -Destination '%APACHE_ZIP%'"
-
+if not exist "%PROGRAMSDIR%" mkdir "%PROGRAMSDIR%"
 echo Extracting Apache...
 powershell -Command "Expand-Archive -Path '%APACHE_ZIP%' -DestinationPath '%DOWNLOADS%\apache_temp' -Force"
 move /Y "%DOWNLOADS%\apache_temp\Apache24" "%APACHEDIR%" >nul
@@ -87,6 +87,9 @@ echo PHPIniDir "%PHPDIR:/=/%" >> "%HTTPDCONF%"
 
 REM Set ServerName to suppress AH00558 warning
 echo ServerName localhost:80 >> "%HTTPDCONF%"
+
+REM Replace DirectoryIndex with index.html index.php (handles leading spaces too)
+powershell -Command "(Get-Content '%HTTPDCONF%') -replace '^\s*DirectoryIndex\s+.*','DirectoryIndex index.html index.php' | Set-Content '%HTTPDCONF%'"
 
 REM ==========================
 REM Create hideApache.vbs
