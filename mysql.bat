@@ -107,9 +107,10 @@ REM ==========================
 REM Create uninstall script
 REM ==========================
 (
-echo "%MYSQLDIR%\bin\mysqladmin.exe" -u server -pserver shutdown ^& timeout /t 5 >nul ^& rmdir /s /q "%MYSQLDIR%" ^& reg delete "HKCU\Environment" /v MYSQL_BIN /f
+echo "%MYSQLDIR%\bin\mysqladmin.exe" -u server -pserver shutdown ^& timeout /t 5 ^>nul ^& rmdir /s /q "%MYSQLDIR%" ^& reg delete "HKCU\Environment" /v MYSQL_BIN /f
 ) > "%PROGRAMSDIR%\uninstallMySQL.bat"
 echo Uninstall script created at %PROGRAMSDIR%\uninstallMySQL.bat
 
 pause
 endlocal
+
