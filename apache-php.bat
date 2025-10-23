@@ -50,7 +50,7 @@ echo Apache extracted to %APACHEDIR%.
 REM ==========================
 REM Download & extract PHP
 REM ==========================
-set "PHP_VERSION=8.4.13"
+set "PHP_VERSION=8.4.14"
 set "PHP_URL=https://windows.php.net/downloads/releases/php-8.4.13-Win32-vs17-x64.zip"
 set "PHP_ZIP=%DOWNLOADS%\php-%PHP_VERSION%-Win32-vs17-x64.zip"
 
@@ -122,3 +122,4 @@ echo Your htdocs folder: %APACHEDIR%\htdocs
 echo ==========================
 pause
 endlocal
+
