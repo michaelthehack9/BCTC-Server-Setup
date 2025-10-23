@@ -1,15 +1,15 @@
 # BCTC-Server-Setup
-* Download Files
+### Download Files
   * Click Code then Download ZIP
   * Right click the zip file
   * Click properties
   * Check the unblock checkbox
   * Click Apply and Ok
-* Run the install scripts
+### Run the install scripts
   * Extract the ZIP file
   * Run the apache-php.bat file
   * Run the mysql.bat file
-* Test the install
+### Test the install
   * Move the Controls.bat file to the desktop
   * Run it
   * Type 1 and click enter
