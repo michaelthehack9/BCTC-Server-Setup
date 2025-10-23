@@ -18,3 +18,6 @@
 * Click enter
 * It should load up an "It Works!" screen
 * If it doesn't please raise your hand!
+### Cleanup the files
+* Remove the zip file you downloaded
+* Remove the folder the zip file extracted to
