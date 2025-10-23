@@ -45,5 +45,3 @@ exit /B 0
 taskkill /F /im httpd.exe
 echo Services Stopped
 exit /B 0
-
-
