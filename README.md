@@ -1,7 +1,6 @@
 # BCTC-Server-Setup
 ### Download Files
-* Click Releases
-* Download the newest release source code
+* Download the release at the right side that says Main
 * Right click the zip file
 * Click properties
 * Check the unblock checkbox
