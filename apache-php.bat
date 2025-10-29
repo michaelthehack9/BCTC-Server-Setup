@@ -9,7 +9,7 @@ set "user=!full:~8!"
 echo Detected username: !user!
 
 REM ==========================
-REM Set target folders directly under Programs
+REM Set target folders
 REM ==========================
 set "PROGRAMSDIR=C:\Users\!user!\AppData\Local\Programs"
 set "APACHEDIR=%PROGRAMSDIR%\apache"
@@ -38,10 +38,11 @@ set "APACHE_URL=https://www.apachelounge.com/download/VS17/binaries/httpd-%APACH
 set "APACHE_ZIP=%DOWNLOADS%\httpd-%APACHE_VERSION%-win64-VS17.zip"
 
 echo Downloading Apache %APACHE_VERSION%...
-powershell -Command "Start-BitsTransfer -Source '%APACHE_URL%' -Destination '%APACHE_ZIP%'"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-BitsTransfer -Source '%APACHE_URL%' -Destination '%APACHE_ZIP%'"
+
 if not exist "%PROGRAMSDIR%" mkdir "%PROGRAMSDIR%"
 echo Extracting Apache...
-powershell -Command "Expand-Archive -Path '%APACHE_ZIP%' -DestinationPath '%DOWNLOADS%\apache_temp' -Force"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path '%APACHE_ZIP%' -DestinationPath '%DOWNLOADS%\apache_temp' -Force"
 move /Y "%DOWNLOADS%\apache_temp\Apache24" "%APACHEDIR%" >nul
 rmdir /s /q "%DOWNLOADS%\apache_temp"
 del "%APACHE_ZIP%"
@@ -55,30 +56,36 @@ set "PHP_URL=https://windows.php.net/downloads/releases/php-%PHP_VERSION%-Win32-
 set "PHP_ZIP=%DOWNLOADS%\php-%PHP_VERSION%-Win32-vs17-x64.zip"
 
 echo Downloading PHP %PHP_VERSION%...
-powershell -Command "Start-BitsTransfer -Source '%PHP_URL%' -Destination '%PHP_ZIP%'"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-BitsTransfer -Source '%PHP_URL%' -Destination '%PHP_ZIP%'"
 
 echo Extracting PHP...
-powershell -Command "Expand-Archive -Path '%PHP_ZIP%' -DestinationPath '%DOWNLOADS%\PHP_temp' -Force"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path '%PHP_ZIP%' -DestinationPath '%DOWNLOADS%\PHP_temp' -Force"
 move /Y "%DOWNLOADS%\PHP_temp" "%PHPDIR%" >nul
 del "%PHP_ZIP%"
 echo PHP extracted and moved to %PHPDIR%.
 
 REM ==========================
-REM Configure php.ini
+REM Configure php.ini (original edits)
 REM ==========================
 if not exist "%PHPDIR%\php.ini" (
     copy "%PHPDIR%\php.ini-development" "%PHPDIR%\php.ini"
 )
 
-powershell -Command "(Get-Content '%PHPDIR%\php.ini') -replace ';extension_dir = ""ext""""','extension_dir=""""%PHPDIR:\=\\%\\ext""""' -replace ';extension=mysqli','extension=mysqli' | Set-Content '%PHPDIR%\php.ini'"
+REM Original extension_dir and mysqli enable edits
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "(Get-Content '%PHPDIR%\php.ini') -replace ';extension_dir = ""ext""""','extension_dir=""%PHPDIR:\=\\%\\ext""""' -replace ';extension=mysqli','extension=mysqli' | Set-Content '%PHPDIR%\php.ini'"
 
 REM ==========================
 REM Configure httpd.conf
 REM ==========================
 set "HTTPDCONF=%APACHEDIR%\conf\httpd.conf"
 
-REM Update SRVROOT
-powershell -Command "(Get-Content '%HTTPDCONF%') -replace 'Define SRVROOT ""c:/Apache24""""','Define SRVROOT """"%APACHEDIR:/=/%""""' | Set-Content '%HTTPDCONF%'"
+REM Fix SRVROOT safely
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "$conf = Get-Content '%HTTPDCONF%';" ^
+    "$path = '%APACHEDIR%' -replace '\\','/';" ^
+    "$conf = $conf -replace 'Define SRVROOT .*',('Define SRVROOT \"' + $path + '\"');" ^
+    "Set-Content '%HTTPDCONF%' $conf"
 
 REM Add PHP module integration
 echo LoadModule php_module "%PHPDIR:/=/%/php8apache2_4.dll" >> "%HTTPDCONF%"
@@ -88,8 +95,30 @@ echo PHPIniDir "%PHPDIR:/=/%" >> "%HTTPDCONF%"
 REM Set ServerName to suppress AH00558 warning
 echo ServerName localhost:80 >> "%HTTPDCONF%"
 
-REM Replace DirectoryIndex with index.html index.php (handles leading spaces too)
-powershell -Command "(Get-Content '%HTTPDCONF%') -replace '^\s*DirectoryIndex\s+.*','DirectoryIndex index.html index.php' | Set-Content '%HTTPDCONF%'"
+REM Replace DirectoryIndex with index.html index.php
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "(Get-Content '%HTTPDCONF%') -replace '^\s*DirectoryIndex\s+.*','DirectoryIndex index.html index.php' | Set-Content '%HTTPDCONF%'"
+
+REM ==========================
+REM Recreate clean htdocs Directory block
+REM ==========================
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "$conf = Get-Content '%HTTPDCONF%';" ^
+    "$inside = $false;" ^
+    "$newConf = @();" ^
+    "foreach ($line in $conf) {" ^
+    "    if ($line -match '<Directory \""\$\{SRVROOT\}/htdocs\"">') { $inside = $true; continue }" ^
+    "    if ($inside -and $line -match '</Directory>') { $inside = $false; continue }" ^
+    "    if (-not $inside) { $newConf += $line }" ^
+    "};" ^
+    "$newConf += 'DocumentRoot \"${SRVROOT}/htdocs\"';" ^
+    "$newConf += '<Directory \"${SRVROOT}/htdocs\">';" ^
+    "$newConf += '    Options Indexes FollowSymLinks';" ^
+    "$newConf += '    AllowOverride All';" ^
+    "$newConf += '    Require all granted';" ^
+    "$newConf += '</Directory>'; " ^
+    "Set-Content -Path '%HTTPDCONF%' -Value $newConf"
+echo Clean htdocs Directory block recreated in httpd.conf.
 
 REM ==========================
 REM Create hideApache.vbs
@@ -122,5 +151,3 @@ echo Your htdocs folder: %APACHEDIR%\htdocs
 echo ==========================
 pause
 endlocal
-
-
