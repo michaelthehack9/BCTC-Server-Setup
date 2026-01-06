@@ -14,6 +14,7 @@ REM ==========================
 set "PROGRAMSDIR=C:\Users\!user!\AppData\Local\Programs"
 set "MYSQLDIR=%PROGRAMSDIR%\mysql"
 set "DATADIR=%MYSQLDIR%\datadir"
+set "DOWNLOADS=%USERPROFILE%\Downloads"
 
 REM ==========================
 REM Check if MySQL already exists
@@ -27,24 +28,28 @@ if exist "%MYSQLDIR%" (
 REM ==========================
 REM Download & extract MySQL
 REM ==========================
-set "VERSION=9.4.0"
-set "DOWNLOAD_URL=https://dev.mysql.com/get/Downloads/MySQL-9.4/mysql-%VERSION%-winx64.zip"
-set "ZIP_FILE=mysql-%VERSION%-winx64.zip"
+set "VERSION=9.5"
+set "EXT=0"
+set "DOWNLOAD_URL=https://dev.mysql.com/get/Downloads/MySQL-%VERSION%/mysql-%VERSION%.%EXT%-winx64.zip"
+set "ZIP_FILE=%DOWNLOADS%/mysql-%VERSION%.%EXT%-winx64.zip"
 
-echo Downloading MySQL %VERSION%...
+echo Downloading MySQL %VERSION%.%EXT%...
 powershell -Command "Start-BitsTransfer -Source '%DOWNLOAD_URL%' -Destination '%ZIP_FILE%'"
 
 echo Extracting MySQL...
-powershell -Command "Expand-Archive -Path '%ZIP_FILE%' -DestinationPath '.' -Force"
-ren mysql-%VERSION%-winx64 mysql
-del "%ZIP_FILE%"
+powershell -Command "Expand-Archive -Path '%ZIP_FILE%' -DestinationPath '%DOWNLOADS%/mysql1' -Force"
+move "!DOWNLOADS!\mysql1\mysql-%VERSION%.%EXT%-winx64" "!DOWNLOADS!\mysql"
+timeout /t 1 >nul
+del /f /q "!DOWNLOADS!\mysql-*-winx64.zip"
+rmdir "%DOWNLOADS%/mysql1"
+
 echo MySQL extracted.
 
 REM ==========================
 REM Move MySQL into Programs
 REM ==========================
 if not exist "%PROGRAMSDIR%" mkdir "%PROGRAMSDIR%"
-move /Y "mysql" "%PROGRAMSDIR%\"
+move /Y "%DOWNLOADS%/mysql" "%PROGRAMSDIR%\"
 echo MySQL moved to %MYSQLDIR%
 
 REM ==========================
