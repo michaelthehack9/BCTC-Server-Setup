@@ -2,3 +2,4 @@
 README.md export-ignore
 .gitattributes export-ignore
 bctcdbmover.bat export-ignore
+bctcdb.sql export-ignore
