@@ -18,14 +18,4 @@
 * Type UTC
 * Type 1
 ### Test the install
-* Move the Controls.bat file to the desktop
-* Run it
-* Type 1 and click enter
-* Goto your browser
-* Type localhost in the url bar
-* Click enter
-* It should load up an "It Works!" screen
-* If it doesn't please raise your hand!
-### Cleanup the files
-* Remove the zip file you downloaded
-* Remove the folder the zip file extracted to
+* Open a brand new terminal and type 'php -v'
